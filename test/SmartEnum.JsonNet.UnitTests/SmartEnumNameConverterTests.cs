@@ -1,9 +1,10 @@
 namespace Ardalis.SmartEnum.JsonNet.UnitTests
 {
     using System;
+    using System.Collections.Generic;
+    using FluentAssertions;
     using Newtonsoft.Json;
     using Xunit;
-    using FluentAssertions;
 
     public class SmartEnumNameConverterTests
     {
@@ -23,6 +24,9 @@ namespace Ardalis.SmartEnum.JsonNet.UnitTests
 
             [JsonConverter(typeof(SmartEnumNameConverter<TestEnumString, string>))]
             public TestEnumString String { get; set; }
+
+            [JsonConverter(typeof(SmartArrayEnumNameConverter<TestEnumInt32, int>))]
+            public List<TestEnumInt32> Ints { get; set; }
         }
 
         static readonly TestClass TestInstance = new TestClass
@@ -32,6 +36,7 @@ namespace Ardalis.SmartEnum.JsonNet.UnitTests
             Int32 = TestEnumInt32.Instance,
             Double = TestEnumDouble.Instance,
             String = TestEnumString.Instance,
+            Ints = new List<TestEnumInt32> { TestEnumInt32.Instance, TestEnumInt32.Instance2, TestEnumInt32.Instance3 }
         };
 
         static readonly string JsonString =
@@ -40,14 +45,18 @@ namespace Ardalis.SmartEnum.JsonNet.UnitTests
   ""Int16"": ""Instance"",
   ""Int32"": ""Instance"",
   ""Double"": ""Instance"",
-  ""String"": ""Instance""
+  ""String"": ""Instance"",
+  ""Ints"": [
+    ""Instance"",
+    ""Instance2"",
+    ""Instance3""
+  ]
 }";
 
         [Fact]
         public void SerializesNames()
         {
             var json = JsonConvert.SerializeObject(TestInstance, Formatting.Indented);
-
             json.Should().Be(JsonString);
         }
 
@@ -61,6 +70,7 @@ namespace Ardalis.SmartEnum.JsonNet.UnitTests
             obj.Int32.Should().BeSameAs(TestEnumInt32.Instance);
             obj.Double.Should().BeSameAs(TestEnumDouble.Instance);
             obj.String.Should().BeSameAs(TestEnumString.Instance);
+            obj.Ints.Should().Contain(new List<TestEnumInt32> { TestEnumInt32.Instance, TestEnumInt32.Instance2, TestEnumInt32.Instance3 });
         }
 
         [Fact]
